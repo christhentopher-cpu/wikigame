@@ -10,11 +10,16 @@ SvelteKit UI for the movie/actor Wikigame backend.
 
 ## Setup
 
+From the repo root:
+
 ```bash
-cd ~/wikigame-client
+cd wikigame-client
+cp .env.example .env   # optional; defaults match localhost
 npm install
 npm run dev
 ```
+
+Start Redis first: `docker compose up -d` from the repo root.
 
 Open http://localhost:5173
 

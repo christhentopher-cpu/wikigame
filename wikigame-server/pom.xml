@@ -12,19 +12,18 @@
 	<artifactId>wikigame-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>wikigame-server</name>
-	<description/>
-	<url/>
+	<description>Spring Boot backend for the Wikigame two-player Wikidata film/actor game.</description>
+	<url>https://github.com/christhentopher-cpu/wikigame</url>
 	<licenses>
-		<license/>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
 	</licenses>
-	<developers>
-		<developer/>
-	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:git://github.com/christhentopher-cpu/wikigame.git</connection>
+		<developerConnection>scm:git:ssh://github.com:christhentopher-cpu/wikigame.git</developerConnection>
+		<url>https://github.com/christhentopher-cpu/wikigame</url>
 	</scm>
 	<properties>
 		<java.version>17</java.version>

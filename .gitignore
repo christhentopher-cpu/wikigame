@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Env (never commit secrets)
+.env
+.env.local
+
+# Client
+wikigame-client/node_modules/
+wikigame-client/.svelte-kit/
+wikigame-client/build/
+wikigame-client/.output/
+
+# Server
+wikigame-server/target/
