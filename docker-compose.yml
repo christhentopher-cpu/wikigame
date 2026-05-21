@@ -1,8 +1,6 @@
 services:
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -18,16 +16,24 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      WIKIGAME_WIKIDATA_USER_AGENT: wikigame-server/1.0 (https://github.com/christhentopher-cpu/wikigame)
     depends_on:
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
 
   client:
     build: ./wikigame-client
     ports:
       - "5173:5173"
     depends_on:
-      - server
+      server:
+        condition: service_healthy
 
 volumes:
   redis-data:
