@@ -65,11 +65,15 @@ public class WikidataService {
 	public List<WikidataNode> getNeighbors(WikidataNode current) {
 		// Always resolve type from Wikidata so stale Redis state cannot break neighbor queries.
 		WikidataNode node = resolveNode(current.id());
-		return neighborCache.get(node.id()).orElseGet(() -> {
-			List<WikidataNode> neighbors = fetchNeighbors(node);
+		return neighborCache.get(node.id()).map(this::ensureDisplayableLabels).orElseGet(() -> {
+			List<WikidataNode> neighbors = ensureDisplayableLabels(fetchNeighbors(node));
 			neighborCache.put(node.id(), neighbors);
 			return neighbors;
 		});
+	}
+
+	private List<WikidataNode> ensureDisplayableLabels(List<WikidataNode> nodes) {
+		return WikidataLabelEnricher.enrich(nodes, client::fetchEntityLabels);
 	}
 
 	private List<WikidataNode> fetchNeighbors(WikidataNode node) {

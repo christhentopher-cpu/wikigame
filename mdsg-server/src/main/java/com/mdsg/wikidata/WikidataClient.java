@@ -2,7 +2,10 @@ package com.mdsg.wikidata;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.springframework.http.MediaType;
@@ -41,20 +44,83 @@ public class WikidataClient {
 		}
 		for (JsonNode binding : bindings) {
 			String id = extractQid(binding.path(entityVar).path("value").asText(null));
-			String label = binding.path(labelVar).path("value").asText(null);
-			if (id != null && label != null) {
-				nodes.add(new WikidataNode(id, label, type));
+			if (id == null) {
+				continue;
 			}
+			String label = binding.path(labelVar).path("value").asText("");
+			nodes.add(new WikidataNode(id, label, type));
 		}
-		return nodes;
+		return WikidataLabelEnricher.enrich(nodes, this::fetchEntityLabels);
 	}
 
 	public WikidataNode selectSingleNode(String sparql, String entityVar, String labelVar, NodeType type) {
-		List<WikidataNode> nodes = selectNodes(sparql, entityVar, labelVar, type);
-		if (nodes.isEmpty()) {
+		JsonNode bindings = executeSparql(sparql).path("results").path("bindings");
+		if (!bindings.isArray() || bindings.isEmpty()) {
 			return null;
 		}
-		return nodes.get(0);
+		JsonNode binding = bindings.get(0);
+		String id = extractQid(binding.path(entityVar).path("value").asText(null));
+		if (id == null) {
+			return null;
+		}
+		String label = binding.path(labelVar).path("value").asText("");
+		WikidataNode node = new WikidataNode(id, label, type);
+		return WikidataLabelEnricher.enrichOne(node, this::fetchEntityLabels);
+	}
+
+	/**
+	 * Loads human-readable labels via the Wikidata Action API when SPARQL label service
+	 * returns a QID placeholder (common for entities without an English label).
+	 */
+	Map<String, String> fetchEntityLabels(Collection<String> qids) {
+		if (qids == null || qids.isEmpty()) {
+			return Map.of();
+		}
+		List<String> idList = qids.stream().distinct().toList();
+		Map<String, String> resolved = new LinkedHashMap<>();
+		for (int offset = 0; offset < idList.size(); offset += 50) {
+			List<String> chunk = idList.subList(offset, Math.min(offset + 50, idList.size()));
+			resolved.putAll(fetchEntityLabelsChunk(chunk));
+		}
+		return resolved;
+	}
+
+	private Map<String, String> fetchEntityLabelsChunk(List<String> qids) {
+		String idsParam = String.join("|", qids);
+		URI uri = UriComponentsBuilder.fromUriString(properties.getApiUrl())
+			.queryParam("action", "wbgetentities")
+			.queryParam("ids", idsParam)
+			.queryParam("props", "labels")
+			.queryParam("languages", String.join("|", WikidataLabels.PREFERRED_LANGUAGES))
+			.queryParam("format", "json")
+			.build()
+			.encode()
+			.toUri();
+
+		JsonNode root = executeGet("Wikidata entity labels", uri, MediaType.APPLICATION_JSON);
+		JsonNode entities = root.path("entities");
+		Map<String, String> resolved = new LinkedHashMap<>();
+		if (!entities.isObject()) {
+			return resolved;
+		}
+		entities.fields().forEachRemaining(entry -> {
+			String qid = entry.getKey();
+			if ("-1".equals(qid) || qid == null) {
+				return;
+			}
+			Map<String, String> byLanguage = new LinkedHashMap<>();
+			JsonNode labels = entry.getValue().path("labels");
+			if (labels.isObject()) {
+				labels.fields().forEachRemaining(lang -> byLanguage.put(
+						lang.getKey(),
+						lang.getValue().path("value").asText("")));
+			}
+			String best = WikidataLabels.pickBest(byLanguage, qid);
+			if (best != null) {
+				resolved.put(qid, best);
+			}
+		});
+		return resolved;
 	}
 
 	public String selectLabel(String sparql, String labelVar) {
@@ -86,11 +152,11 @@ public class WikidataClient {
 			String id = hit.path("id").asText(null);
 			String label = hit.path("label").asText(null);
 			String description = hit.path("description").asText("");
-			if (id != null && label != null) {
-				results.add(new FilmSearchResult(id, label, description));
+			if (id != null && WikidataLabels.isDisplayable(id, label)) {
+				results.add(new FilmSearchResult(id, label.trim(), description));
 			}
 		}
-		return results;
+		return enrichFilmSearchResults(results);
 	}
 
 	public List<FilmSearchResult> searchFilmsByLabel(String query, int limit) {
@@ -114,11 +180,33 @@ public class WikidataClient {
 		for (JsonNode binding : bindings) {
 			String id = extractQid(binding.path("item").path("value").asText(null));
 			String label = binding.path("itemLabel").path("value").asText(null);
-			if (id != null && label != null) {
-				results.add(new FilmSearchResult(id, label, ""));
+			if (id != null) {
+				results.add(new FilmSearchResult(id, label != null ? label : "", ""));
 			}
 		}
-		return results;
+		return enrichFilmSearchResults(results);
+	}
+
+	private List<FilmSearchResult> enrichFilmSearchResults(List<FilmSearchResult> results) {
+		if (results.isEmpty()) {
+			return results;
+		}
+		List<WikidataNode> asNodes = results.stream()
+				.map(f -> new WikidataNode(f.id(), f.label(), NodeType.FILM))
+				.toList();
+		List<WikidataNode> enriched = WikidataLabelEnricher.enrich(asNodes, this::fetchEntityLabels);
+		Map<String, String> labels = new LinkedHashMap<>();
+		for (WikidataNode node : enriched) {
+			labels.put(node.id(), node.label());
+		}
+		List<FilmSearchResult> enrichedResults = new ArrayList<>();
+		for (FilmSearchResult original : results) {
+			String label = labels.get(original.id());
+			if (WikidataLabels.isDisplayable(original.id(), label)) {
+				enrichedResults.add(new FilmSearchResult(original.id(), label, original.description()));
+			}
+		}
+		return enrichedResults;
 	}
 
 	private JsonNode executeSparql(String sparql) {

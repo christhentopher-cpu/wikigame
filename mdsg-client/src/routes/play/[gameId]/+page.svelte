@@ -14,6 +14,7 @@
 		type PlayerSession
 	} from '$lib/session';
 	import { connectGame } from '$lib/stomp';
+	import { displayNodeLabel, isDisplayableNode } from '$lib/display';
 	import type { GameState, WikidataNode } from '$lib/types';
 
 	const gameId = $derived.by(() => {
@@ -416,7 +417,7 @@
 				<div class="endpoint">
 					<span class="label">Start</span>
 					<p class="node">
-						{game.startMovie.label}
+						{displayNodeLabel(game.startMovie)}
 						<code>{game.startMovie.id}</code>
 					</p>
 				</div>
@@ -424,7 +425,7 @@
 				<div class="endpoint dest">
 					<span class="label">Destination</span>
 					<p class="node">
-						{game.targetMovie.label}
+						{displayNodeLabel(game.targetMovie)}
 						<code>{game.targetMovie.id}</code>
 					</p>
 				</div>
@@ -434,7 +435,7 @@
 				<h2>You are here</h2>
 				<p class="node current">
 					<span class="type">{game.currentNode.type === 'FILM' ? 'MOVIE' : 'ACTOR'}</span>
-					{game.currentNode.label}
+					{displayNodeLabel(game.currentNode)}
 					<code>{game.currentNode.id}</code>
 				</p>
 			</section>
@@ -475,7 +476,7 @@
 						<p class="hint">No links found for this page on Wikidata.</p>
 					{:else}
 						<ul class="links">
-							{#each neighbors as node (node.id)}
+							{#each neighbors.filter(isDisplayableNode) as node (node.id)}
 								<li>
 									<button
 										type="button"
@@ -484,7 +485,7 @@
 										onclick={() => handleMove(node)}
 									>
 										<span class="type">{node.type}</span>
-										{node.label}
+										{displayNodeLabel(node)}
 										<code>{node.id}</code>
 									</button>
 								</li>
