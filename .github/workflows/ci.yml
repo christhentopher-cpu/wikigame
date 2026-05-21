@@ -17,7 +17,7 @@ jobs:
           java-version: "17"
           cache: maven
       - name: Run server tests
-        working-directory: wikigame-server
+        working-directory: mdsg-server
         run: ./mvnw -B test
 
   client:
@@ -28,9 +28,9 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: wikigame-client/package-lock.json
+          cache-dependency-path: mdsg-client/package-lock.json
       - name: Install and check client
-        working-directory: wikigame-client
+        working-directory: mdsg-client
         run: |
           npm ci
           npm run check

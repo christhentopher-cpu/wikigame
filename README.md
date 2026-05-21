@@ -1,6 +1,6 @@
-# Wikigame
+# MDSG — Movie Database Search Game
 
-Two-player browser game: hop from **film → actor → film** on [Wikidata](https://www.wikidata.org/) until you reach the target movie. Inspired by the “Six Degrees” idea, but using live Wikidata graph data—not IMDb.
+Two-player browser game: hop from **film → actor → film** on [Wikidata](https://www.wikidata.org/) until you reach the target movie. Inspired by the “Six Degrees” idea, using live Wikidata graph data—not IMDb.
 
 ## Stack
 
@@ -14,7 +14,7 @@ Two-player browser game: hop from **film → actor → film** on [Wikidata](http
 
 ## Quick start (Docker — recommended)
 
-**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running (whale icon in the menu bar).
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
 ```bash
 git clone https://github.com/christhentopher-cpu/wikigame.git
@@ -32,14 +32,14 @@ Stop with `Ctrl+C` or `docker compose down`.
 
 ```bash
 # Redis (pick one)
-docker compose up -d redis          # Docker, redis only
+docker compose up -d redis
 # brew install redis && brew services start redis
 
 # Backend (port 8080)
-cd wikigame-server && ./mvnw spring-boot:run
+cd mdsg-server && ./mvnw spring-boot:run
 
 # Frontend (port 5173) — new terminal
-cd wikigame-client
+cd mdsg-client
 cp .env.example .env
 npm install && npm run dev
 ```
@@ -57,25 +57,25 @@ Open http://localhost:5173
 ## Project layout
 
 ```
-wikigame-client/   SvelteKit UI
-wikigame-server/   Spring Boot API + WebSocket + Wikidata integration
+mdsg-client/   SvelteKit UI
+mdsg-server/   Spring Boot API + WebSocket + Wikidata integration
 ```
 
 ## Development
 
 ```bash
 # Server tests
-cd wikigame-server && ./mvnw test
+cd mdsg-server && ./mvnw test
 
 # Client typecheck
-cd wikigame-client && npm run check
+cd mdsg-client && npm run check
 ```
 
 CI runs both on every push (see `.github/workflows/ci.yml`).
 
 ## Data & attribution
 
-Film and actor data come from **Wikidata**. This project is not affiliated with Wikimedia or IMDb. When deploying, set a descriptive `wikigame.wikidata.user-agent` in `application.yml` per the [Wikimedia User-Agent policy](https://meta.wikimedia.org/wiki/User-Agent_policy).
+Film and actor data come from **Wikidata**. This project is not affiliated with Wikimedia or IMDb. When deploying, set a descriptive `mdsg.wikidata.user-agent` in `application.yml` per the [Wikimedia User-Agent policy](https://meta.wikimedia.org/wiki/User-Agent_policy).
 
 ## License
 

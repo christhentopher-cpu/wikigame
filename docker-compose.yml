@@ -10,13 +10,13 @@ services:
       retries: 5
 
   server:
-    build: ./wikigame-server
+    build: ./mdsg-server
     ports:
       - "8080:8080"
     environment:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
-      WIKIGAME_WIKIDATA_USER_AGENT: wikigame-server/1.0 (https://github.com/christhentopher-cpu/wikigame)
+      MDSG_WIKIDATA_USER_AGENT: mdsg-server/1.0 (https://github.com/christhentopher-cpu/wikigame; Movie Database Search Game)
     depends_on:
       redis:
         condition: service_healthy
@@ -28,7 +28,7 @@ services:
       start_period: 45s
 
   client:
-    build: ./wikigame-client
+    build: ./mdsg-client
     ports:
       - "5173:5173"
     depends_on:

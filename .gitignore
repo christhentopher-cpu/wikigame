@@ -7,10 +7,10 @@ Thumbs.db
 .env.local
 
 # Client
-wikigame-client/node_modules/
-wikigame-client/.svelte-kit/
-wikigame-client/build/
-wikigame-client/.output/
+mdsg-client/node_modules/
+mdsg-client/.svelte-kit/
+mdsg-client/build/
+mdsg-client/.output/
 
 # Server
-wikigame-server/target/
+mdsg-server/target/

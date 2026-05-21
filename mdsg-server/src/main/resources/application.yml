@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mdsg-server
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+
+mdsg:
+  game:
+    ttl: 24h
+  wikidata:
+    sparql-url: https://query.wikidata.org/sparql
+    api-url: https://www.wikidata.org/w/api.php
+    user-agent: mdsg-server/1.0 (local-dev; Movie Database Search Game)
+    timeout: 15s
+    neighbor-limit: 200
+    search-candidate-limit: 20
+    search-result-limit: 8
+    retry-max-attempts: 3
+    retry-backoff-ms: 500
+    neighbor-cache-ttl: 1h
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+  websocket:
+    endpoint: /ws
+    application-prefix: /app
+    broker-prefix: /topic
+    game-topic-prefix: /topic/game
