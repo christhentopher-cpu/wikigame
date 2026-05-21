@@ -2,6 +2,14 @@
 
 Two-player browser game: hop from **film → actor → film** on [Wikidata](https://www.wikidata.org/) until you reach the target movie. Inspired by the “Six Degrees” idea, using live Wikidata graph data—not IMDb.
 
+## Play on Mac (download and host)
+
+1. Install [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/).
+2. Double-click **`scripts/Start MDSG.command`** in this folder.
+3. Play in the browser; share invite links with friends on the **same Wi‑Fi**.
+
+Full guide: [PLAY_ON_MAC.md](PLAY_ON_MAC.md)
+
 ## Stack
 
 | Layer | Tech |

@@ -15,7 +15,7 @@ Each puzzle needs Wikidata film IDs (`Q…`):
 }
 ```
 
-- `startMovieId` / `targetMovieId` — **required** (must be films on Wikidata).
+- `startMovieId` / `targetMovieId` — **required** (must be films on Wikidata). Look up IDs on [wikidata.org](https://www.wikidata.org/) — the label in this file is only for display; the **QID must be the actual film**.
 - `startMovieLabel` / `targetMovieLabel` — optional; shown in the solo puzzle list before play.
 - `id` / `title` — optional; help you organize puzzles.
 

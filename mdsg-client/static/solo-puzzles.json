@@ -13,7 +13,7 @@
 			"title": "Pixar hop",
 			"startMovieId": "Q182153",
 			"startMovieLabel": "Cars",
-			"targetMovieId": "Q174902",
+			"targetMovieId": "Q171048",
 			"targetMovieLabel": "Toy Story"
 		},
 		{
@@ -21,8 +21,8 @@
 			"title": "Sci-fi chain",
 			"startMovieId": "Q83495",
 			"startMovieLabel": "The Matrix",
-			"targetMovieId": "Q165478",
-			"targetMovieLabel": "Star Wars"
+			"targetMovieId": "Q17738",
+			"targetMovieLabel": "Star Wars: A New Hope"
 		}
 	]
 }

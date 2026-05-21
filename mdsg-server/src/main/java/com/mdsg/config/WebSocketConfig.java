@@ -19,12 +19,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
-		String[] allowedOrigins = properties.getCors()
-			.getAllowedOrigins()
+		String[] allowedPatterns = properties.getCors()
+			.getAllowedOriginPatterns()
 			.toArray(String[]::new);
 
 		registry.addEndpoint(properties.getWebsocket().getEndpoint())
-			.setAllowedOriginPatterns(allowedOrigins)
+			.setAllowedOriginPatterns(allowedPatterns)
 			.withSockJS();
 	}
 

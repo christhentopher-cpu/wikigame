@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import HowToPlay from '$lib/components/HowToPlay.svelte';
 	import MovieSearch from '$lib/components/MovieSearch.svelte';
+	import PlayerNameInput from '$lib/components/PlayerNameInput.svelte';
 	import { createGame, createSoloGame } from '$lib/api';
 	import { loadSoloPuzzles, puzzleLabel, type SoloPuzzle } from '$lib/solo-puzzles';
 	import { setPlayerSession } from '$lib/session';
@@ -97,14 +98,6 @@
 		void startSolo(selectedPuzzle);
 	}
 
-	function playRandomSolo() {
-		if (soloPuzzles.length === 0) {
-			error = 'No puzzles in solo-puzzles.json';
-			return;
-		}
-		const puzzle = soloPuzzles[Math.floor(Math.random() * soloPuzzles.length)];
-		void startSolo(puzzle);
-	}
 </script>
 
 <nav class="tabs" aria-label="Game mode">
@@ -141,10 +134,7 @@
 		</p>
 
 		<form onsubmit={handleCreateMultiplayer} class="form">
-			<label>
-				Your name
-				<input bind:value={hostName} required maxlength="50" />
-			</label>
+			<PlayerNameInput id="player-name-mp" bind:value={hostName} />
 
 			<MovieSearch
 				label="Start movie"
@@ -176,10 +166,12 @@
 			folder.
 		</p>
 
-		<label>
-			Your name
-			<input bind:value={hostName} required maxlength="50" />
-		</label>
+		<PlayerNameInput
+			id="player-name-solo"
+			bind:value={hostName}
+			placeholder="Solo player name"
+			hint="Used on the score screen"
+		/>
 
 		{#if puzzlesLoading}
 			<p class="hint">Loading puzzles…</p>
@@ -210,14 +202,9 @@
 				{/each}
 			</ul>
 
-			<div class="solo-actions">
-				<button type="button" class="primary" disabled={loading} onclick={playSelectedSolo}>
-					{loading ? 'Starting…' : 'Play selected'}
-				</button>
-				<button type="button" class="ghost" disabled={loading} onclick={playRandomSolo}>
-					Random puzzle
-				</button>
-			</div>
+			<button type="button" class="primary play-btn" disabled={loading} onclick={playSelectedSolo}>
+				{loading ? 'Starting…' : 'Play'}
+			</button>
 		{/if}
 
 		{#if error}
@@ -280,22 +267,6 @@
 		gap: 1rem;
 	}
 
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		font-size: 0.85rem;
-		color: #b8c7db;
-	}
-
-	input[type='text'] {
-		padding: 0.55rem 0.65rem;
-		border-radius: 8px;
-		border: 1px solid #3a4f6b;
-		background: #0f1419;
-		color: #fff;
-	}
-
 	.puzzle-list {
 		list-style: none;
 		margin: 1rem 0;
@@ -329,10 +300,9 @@
 		gap: 0.2rem;
 	}
 
-	.solo-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
+	.play-btn {
+		width: 100%;
+		margin-top: 0.25rem;
 	}
 
 	.primary {
@@ -345,19 +315,6 @@
 	}
 
 	.primary:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.ghost {
-		padding: 0.7rem 1rem;
-		border-radius: 8px;
-		border: 1px solid #3a4f6b;
-		background: transparent;
-		color: #b8c7db;
-	}
-
-	.ghost:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
 	}

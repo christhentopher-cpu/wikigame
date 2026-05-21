@@ -6,6 +6,7 @@
 
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
 	import MovieSearch from '$lib/components/MovieSearch.svelte';
+	import PlayerNameInput from '$lib/components/PlayerNameInput.svelte';
 	import * as api from '$lib/api';
 	import {
 		clearPlayerSession,
@@ -347,10 +348,12 @@
 				you’ll pick movies for their turn.
 			</p>
 			<form onsubmit={handleJoin} class="form">
-				<label>
-					Your name
-					<input bind:value={joinName} required maxlength="50" />
-				</label>
+				<PlayerNameInput
+					id="player-name-join"
+					bind:value={joinName}
+					placeholder="Guest name"
+					hint="Host will see this on the game screen"
+				/>
 				{#if error}
 					<p class="error">{error}</p>
 				{/if}
