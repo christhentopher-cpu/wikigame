@@ -12,23 +12,36 @@ Two-player browser game: hop from **film → actor → film** on [Wikidata](http
 | Data | Wikidata SPARQL + Action API |
 | Realtime | WebSocket broadcasts per game |
 
-## Quick start
+## Quick start (Docker — recommended)
 
-**Prerequisites:** Node.js 20+, Java 17+, Docker (for Redis)
+**Prerequisites:** Docker installed and running ([Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Colima](https://github.com/abiosoft/colima): `brew install colima docker && colima start`).
 
 ```bash
-# 1. Redis
-docker compose up -d
+git clone https://github.com/christhentopher-cpu/wikigame.git
+cd wikigame
+docker compose up --build
+```
 
-# 2. Backend (port 8080)
-cd wikigame-server
-./mvnw spring-boot:run
+First run builds images (a few minutes). Then open **http://localhost:5173**.
 
-# 3. Frontend (port 5173) — new terminal
+Stop with `Ctrl+C` or `docker compose down`.
+
+## Quick start (local dev)
+
+**Prerequisites:** Node.js 20+, Java 17+, Redis
+
+```bash
+# Redis (pick one)
+docker compose up -d redis          # Docker, redis only
+# brew install redis && brew services start redis
+
+# Backend (port 8080)
+cd wikigame-server && ./mvnw spring-boot:run
+
+# Frontend (port 5173) — new terminal
 cd wikigame-client
 cp .env.example .env
-npm install
-npm run dev
+npm install && npm run dev
 ```
 
 Open http://localhost:5173
