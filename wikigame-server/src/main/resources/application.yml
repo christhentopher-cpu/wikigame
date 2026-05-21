@@ -24,6 +24,7 @@ wikigame:
     search-result-limit: 8
     retry-max-attempts: 3
     retry-backoff-ms: 500
+    neighbor-cache-ttl: 1h
   cors:
     allowed-origins:
       - http://localhost:5173

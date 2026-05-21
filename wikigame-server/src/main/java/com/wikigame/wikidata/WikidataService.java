@@ -23,10 +23,15 @@ public class WikidataService {
 
 	private final WikidataClient client;
 	private final WikidataProperties properties;
+	private final WikidataNeighborCache neighborCache;
 
-	public WikidataService(WikidataClient client, WikidataProperties properties) {
+	public WikidataService(
+			WikidataClient client,
+			WikidataProperties properties,
+			WikidataNeighborCache neighborCache) {
 		this.client = client;
 		this.properties = properties;
+		this.neighborCache = neighborCache;
 	}
 
 	public WikidataNode resolveNode(String qid) {
@@ -60,6 +65,14 @@ public class WikidataService {
 	public List<WikidataNode> getNeighbors(WikidataNode current) {
 		// Always resolve type from Wikidata so stale Redis state cannot break neighbor queries.
 		WikidataNode node = resolveNode(current.id());
+		return neighborCache.get(node.id()).orElseGet(() -> {
+			List<WikidataNode> neighbors = fetchNeighbors(node);
+			neighborCache.put(node.id(), neighbors);
+			return neighbors;
+		});
+	}
+
+	private List<WikidataNode> fetchNeighbors(WikidataNode node) {
 		int limit = properties.getNeighborLimit();
 		if (node.type() == NodeType.ACTOR) {
 			String sparql = """

@@ -16,6 +16,7 @@ public class WikidataProperties {
 	private int searchResultLimit = 8;
 	private int retryMaxAttempts = 3;
 	private long retryBackoffMs = 500;
+	private Duration neighborCacheTtl = Duration.ofHours(1);
 
 	public String getSparqlUrl() {
 		return sparqlUrl;
@@ -87,6 +88,14 @@ public class WikidataProperties {
 
 	public void setRetryBackoffMs(long retryBackoffMs) {
 		this.retryBackoffMs = retryBackoffMs;
+	}
+
+	public Duration getNeighborCacheTtl() {
+		return neighborCacheTtl;
+	}
+
+	public void setNeighborCacheTtl(Duration neighborCacheTtl) {
+		this.neighborCacheTtl = neighborCacheTtl;
 	}
 
 }
