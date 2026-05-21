@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: wikigame-server
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+
+wikigame:
+  game:
+    ttl: 24h
+  wikidata:
+    sparql-url: https://query.wikidata.org/sparql
+    api-url: https://www.wikidata.org/w/api.php
+    user-agent: wikigame-server/0.1 (local-dev)
+    timeout: 15s
+    neighbor-limit: 200
+    search-candidate-limit: 20
+    search-result-limit: 8
+    retry-max-attempts: 3
+    retry-backoff-ms: 500
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+  websocket:
+    endpoint: /ws
+    application-prefix: /app
+    broker-prefix: /topic
+    game-topic-prefix: /topic/game
