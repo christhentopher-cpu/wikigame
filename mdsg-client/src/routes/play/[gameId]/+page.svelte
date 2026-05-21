@@ -47,8 +47,12 @@
 		game && session ? game.activePlayerId === session.playerId : false
 	);
 
+	const isSolo = $derived(game?.phase === 'SOLO_PLAY');
+
 	const isPlayPhase = $derived(
-		game?.phase === 'ROUND_ONE_PLAY' || game?.phase === 'ROUND_TWO_PLAY'
+		game?.phase === 'SOLO_PLAY' ||
+			game?.phase === 'ROUND_ONE_PLAY' ||
+			game?.phase === 'ROUND_TWO_PLAY'
 	);
 
 	const inviteUrl = $derived(
@@ -80,7 +84,10 @@
 				: `${opponentLabel} is choosing your round 2 movies…`;
 		}
 		if (game.phase === 'FINISHED') {
-			return 'Both rounds complete.';
+			return game.playerTwo == null ? 'Puzzle complete.' : 'Both rounds complete.';
+		}
+		if (game.phase === 'SOLO_PLAY' && isNavigator) {
+			return 'Solo — reach the destination movie';
 		}
 		if (isNavigator) {
 			const round =
@@ -137,7 +144,10 @@
 				if (reachedTarget && state.phase === 'ROUND_TWO_SETUP') {
 					roundWinBanner = `Round 1 complete in ${state.clickCount} clicks!`;
 				} else if (reachedTarget && state.phase === 'FINISHED') {
-					roundWinBanner = `Round 2 complete in ${state.clickCount} clicks — match over!`;
+					const soloWin = prev.phase === 'SOLO_PLAY';
+					roundWinBanner = soloWin
+						? `Puzzle solved in ${state.clickCount} clicks!`
+						: `Round 2 complete in ${state.clickCount} clicks — match over!`;
 				}
 			}
 		});
@@ -253,6 +263,8 @@
 			if (game.currentNode.id === game.targetMovie.id) {
 				if (game.phase === 'ROUND_TWO_SETUP') {
 					roundWinBanner = `Round 1 complete in ${game.clickCount} clicks!`;
+				} else if (game.phase === 'FINISHED' && game.playerTwo == null) {
+					roundWinBanner = `Puzzle solved in ${game.clickCount} clicks!`;
 				} else if (game.phase === 'FINISHED') {
 					roundWinBanner = `Round 2 complete in ${game.clickCount} clicks — match over!`;
 				}
@@ -286,8 +298,9 @@
 		if (!session || !isNavigator || !isPlayPhase) {
 			return;
 		}
-		const message =
-			game?.phase === 'ROUND_ONE_PLAY'
+		const message = isSolo
+			? 'Give up this puzzle?'
+			: game?.phase === 'ROUND_ONE_PLAY'
 				? `Give up round 1? You'll choose ${opponentLabel}'s round 2 movies.`
 				: 'Give up round 2? The game will end.';
 		if (!confirm(message)) {
@@ -349,7 +362,7 @@
 			<div>
 				<span class="label">You</span>
 				<strong>{session.displayName}</strong>
-				<span class="pill">{session.slot === 'ONE' ? 'Host' : 'Guest'}</span>
+				<span class="pill">{isSolo ? 'Solo' : session.slot === 'ONE' ? 'Host' : 'Guest'}</span>
 			</div>
 			<div>
 				<span class="label">Round</span>
@@ -359,12 +372,12 @@
 				<span class="label">Clicks this round</span>
 				<strong>{game.clickCount}</strong>
 			</div>
-			{#if game.phase === 'WAITING_FOR_OPPONENT'}
+			{#if !isSolo && game.phase === 'WAITING_FOR_OPPONENT'}
 				<button type="button" class="ghost" onclick={copyInvite}>
 					{inviteCopied ? 'Copied!' : 'Copy invite link'}
 				</button>
 			{/if}
-			{#if game.phase !== 'FINISHED'}
+			{#if !isSolo && game.phase !== 'FINISHED'}
 				<button type="button" class="ghost end-match" disabled={moving} onclick={handleEndMatch}>
 					End match
 				</button>
@@ -374,9 +387,13 @@
 
 		{#if game.phase === 'FINISHED'}
 			<section class="card finished">
-				<h2>Match over</h2>
-				<p class="hint">Both rounds are done or someone ended the game. Start fresh with a new link.</p>
-				<a href="/" class="primary-link">New game</a>
+				<h2>{isSolo ? 'Puzzle complete' : 'Match over'}</h2>
+				<p class="hint">
+					{isSolo
+						? 'Nice work — pick another puzzle from the Solo tab.'
+						: 'Both rounds are done or someone ended the game. Start fresh with a new link.'}
+				</p>
+				<a href="/" class="primary-link">{isSolo ? 'More puzzles' : 'New game'}</a>
 			</section>
 		{/if}
 
@@ -388,7 +405,7 @@
 			<p class="banner" class:watching={!isNavigator && isPlayPhase}>{roleBanner}</p>
 		{/if}
 
-		{#if game.phase === 'ROUND_TWO_SETUP' && isNavigator}
+		{#if !isSolo && game.phase === 'ROUND_TWO_SETUP' && isNavigator}
 			<section class="card">
 				<h2>Set movies for {opponentLabel}</h2>
 				<p class="hint">Choose where they start and where they must end.</p>
@@ -494,7 +511,7 @@
 					{/if}
 				</section>
 			{/if}
-		{:else if game.phase === 'WAITING_FOR_OPPONENT' && session.slot === 'ONE'}
+		{:else if !isSolo && game.phase === 'WAITING_FOR_OPPONENT' && session.slot === 'ONE'}
 			<section class="card">
 				<p class="hint">Share the invite link. Your guest plays round 1 on the movies above.</p>
 			</section>

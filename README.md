@@ -46,7 +46,12 @@ npm install && npm run dev
 
 Open http://localhost:5173
 
-## How to play
+## Game modes
+
+- **Multiplayer** — host sets movies, guest joins via link, two rounds.
+- **Solo** — puzzles from `mdsg-client/static/solo-puzzles.json` (edit that file to add start/end movie pairs).
+
+## How to play (multiplayer)
 
 1. **Host** creates a game with a start movie and target movie (search uses Wikidata).
 2. **Copy the invite link** and open it in another browser or tab.

@@ -32,6 +32,13 @@ public class GameController {
 		return CreateGameResponse.from(state);
 	}
 
+	@PostMapping("/solo")
+	@ResponseStatus(HttpStatus.CREATED)
+	public CreateGameResponse createSoloGame(@Valid @RequestBody CreateGameRequest request) {
+		GameState state = gameService.createSoloGame(request);
+		return CreateGameResponse.from(state);
+	}
+
 	@PostMapping("/{gameId}/join")
 	public JoinGameResponse joinGame(@PathVariable String gameId, @Valid @RequestBody JoinGameRequest request) {
 		GameState state = gameService.joinGame(gameId, request);

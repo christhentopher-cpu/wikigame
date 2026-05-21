@@ -72,6 +72,13 @@ export function createGame(body: CreateGameRequest) {
 	});
 }
 
+export function createSoloGame(body: CreateGameRequest) {
+	return request<CreateGameResponse>('/api/games/solo', {
+		method: 'POST',
+		body: JSON.stringify(body)
+	});
+}
+
 export function joinGame(gameId: string, body: JoinGameRequest) {
 	return request<JoinGameResponse>(`/api/games/${gameId}/join`, {
 		method: 'POST',

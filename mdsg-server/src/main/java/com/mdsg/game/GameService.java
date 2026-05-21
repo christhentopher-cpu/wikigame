@@ -69,6 +69,33 @@ public class GameService {
 		return state;
 	}
 
+	public GameState createSoloGame(CreateGameRequest request) {
+		validateMoviePair(request.startMovieId(), request.targetMovieId());
+
+		String gameId = UUID.randomUUID().toString();
+		String playerId = UUID.randomUUID().toString();
+
+		WikidataNode startMovie = wikidataService.resolveFilm(request.startMovieId());
+		WikidataNode targetMovie = wikidataService.resolveFilm(request.targetMovieId());
+		GamePlayer player = new GamePlayer(playerId, request.hostPlayerName(), PlayerSlot.ONE);
+
+		GameState state = new GameState(
+				gameId,
+				GamePhase.SOLO_PLAY,
+				1,
+				startMovie,
+				startMovie,
+				targetMovie,
+				playerId,
+				0,
+				player,
+				null,
+				Instant.now());
+
+		saveState(state);
+		return state;
+	}
+
 	public GameState joinGame(String gameId, JoinGameRequest request) {
 		GameState current = getGame(gameId);
 
@@ -197,7 +224,11 @@ public class GameService {
 		int round = game.round();
 		String activePlayerId;
 
-		if (game.phase() == GamePhase.ROUND_ONE_PLAY) {
+		if (game.phase() == GamePhase.SOLO_PLAY) {
+			phase = GamePhase.FINISHED;
+			activePlayerId = request.playerId();
+		}
+		else if (game.phase() == GamePhase.ROUND_ONE_PLAY) {
 			// Round 1 over — whoever gives up chooses round 2 movies for the opponent.
 			phase = GamePhase.ROUND_TWO_SETUP;
 			round = 2;
@@ -255,7 +286,10 @@ public class GameService {
 		String activePlayerId = game.activePlayerId();
 
 		if (reachedTarget) {
-			if (game.phase() == GamePhase.ROUND_ONE_PLAY) {
+			if (game.phase() == GamePhase.SOLO_PLAY) {
+				phase = GamePhase.FINISHED;
+			}
+			else if (game.phase() == GamePhase.ROUND_ONE_PLAY) {
 				phase = GamePhase.ROUND_TWO_SETUP;
 				round = 2;
 				activePlayerId = game.playerTwo().id();
@@ -284,7 +318,9 @@ public class GameService {
 	}
 
 	private static boolean isPlayPhase(GamePhase phase) {
-		return phase == GamePhase.ROUND_ONE_PLAY || phase == GamePhase.ROUND_TWO_PLAY;
+		return phase == GamePhase.SOLO_PLAY
+				|| phase == GamePhase.ROUND_ONE_PLAY
+				|| phase == GamePhase.ROUND_TWO_PLAY;
 	}
 
 	private static void requireNavigator(GameState game, String playerId) {

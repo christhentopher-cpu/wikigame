@@ -1,0 +1,28 @@
+{
+	"puzzles": [
+		{
+			"id": "action-classics",
+			"title": "Action classics",
+			"startMovieId": "Q105598",
+			"startMovieLabel": "Die Hard",
+			"targetMovieId": "Q25188",
+			"targetMovieLabel": "Inception"
+		},
+		{
+			"id": "pixar-hop",
+			"title": "Pixar hop",
+			"startMovieId": "Q182153",
+			"startMovieLabel": "Cars",
+			"targetMovieId": "Q174902",
+			"targetMovieLabel": "Toy Story"
+		},
+		{
+			"id": "sci-fi-chain",
+			"title": "Sci-fi chain",
+			"startMovieId": "Q83495",
+			"startMovieLabel": "The Matrix",
+			"targetMovieId": "Q165478",
+			"targetMovieLabel": "Star Wars"
+		}
+	]
+}

@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
+import com.mdsg.api.CreateGameRequest;
 import com.mdsg.api.GiveUpRequest;
 import com.mdsg.api.MoveRequest;
 import com.mdsg.api.RoundSetupRequest;
@@ -53,6 +54,46 @@ class GameServiceTest {
 		when(gameRedisTemplate.opsForValue()).thenReturn(valueOperations);
 
 		gameService = new GameService(gameRedisTemplate, properties, broadcastService, wikidataService);
+	}
+
+	@Test
+	void createSoloGameStartsInSoloPlay() {
+		when(wikidataService.resolveFilm("Q190908")).thenReturn(new WikidataNode("Q190908", "Seven", NodeType.FILM));
+		when(wikidataService.resolveFilm("Q190050")).thenReturn(new WikidataNode("Q190050", "Fight Club", NodeType.FILM));
+
+		GameState state = gameService.createSoloGame(
+				new CreateGameRequest("Q190908", "Q190050", "Solo Player"));
+
+		assertThat(state.phase()).isEqualTo(GamePhase.SOLO_PLAY);
+		assertThat(state.playerTwo()).isNull();
+		assertThat(state.activePlayerId()).isEqualTo(state.playerOne().id());
+	}
+
+	@Test
+	void winningSoloPuzzleFinishesGame() {
+		GameState game = soloPlayOnActor();
+		when(valueOperations.get(any())).thenReturn(game);
+
+		WikidataNode fightClub = new WikidataNode("Q190050", "Fight Club", NodeType.FILM);
+		when(wikidataService.resolveNode("Q190050")).thenReturn(fightClub);
+		when(wikidataService.areAdjacent("Q35332", "Q190050")).thenReturn(true);
+
+		GameState updated = gameService.applyMove(
+				"game-123",
+				new MoveRequest("player-1", "Q190050"));
+
+		assertThat(updated.phase()).isEqualTo(GamePhase.FINISHED);
+		assertThat(updated.clickCount()).isEqualTo(2);
+	}
+
+	@Test
+	void giveUpSoloFinishesGame() {
+		GameState game = soloPlayOnMovie();
+		when(valueOperations.get(any())).thenReturn(game);
+
+		GameState updated = gameService.giveUp("game-123", new GiveUpRequest("player-1"));
+
+		assertThat(updated.phase()).isEqualTo(GamePhase.FINISHED);
 	}
 
 	@Test
@@ -149,6 +190,49 @@ class GameServiceTest {
 				"game-123",
 				new MoveRequest("player-1", "Q35332")))
 			.isInstanceOf(NotActivePlayerException.class);
+	}
+
+	private static GameState soloPlayOnMovie() {
+		return soloBase(GamePhase.SOLO_PLAY, "Q190908", "Seven", 0);
+	}
+
+	private static GameState soloPlayOnActor() {
+		GameState base = soloBase(GamePhase.SOLO_PLAY, "Q35332", "Brad Pitt", 1);
+		WikidataNode start = new WikidataNode("Q190908", "Seven", NodeType.FILM);
+		WikidataNode brad = new WikidataNode("Q35332", "Brad Pitt", NodeType.ACTOR);
+		WikidataNode target = new WikidataNode("Q190050", "Fight Club", NodeType.FILM);
+		return new GameState(
+				base.gameId(),
+				base.phase(),
+				base.round(),
+				start,
+				brad,
+				target,
+				base.activePlayerId(),
+				base.clickCount(),
+				base.playerOne(),
+				null,
+				base.createdAt());
+	}
+
+	private static GameState soloBase(GamePhase phase, String currentId, String currentLabel, int clicks) {
+		GamePlayer solo = new GamePlayer("player-1", "Solo", PlayerSlot.ONE);
+		WikidataNode start = new WikidataNode("Q190908", "Seven", NodeType.FILM);
+		NodeType currentType = currentId.equals("Q35332") ? NodeType.ACTOR : NodeType.FILM;
+		WikidataNode current = new WikidataNode(currentId, currentLabel, currentType);
+		WikidataNode target = new WikidataNode("Q190050", "Fight Club", NodeType.FILM);
+		return new GameState(
+				"game-123",
+				phase,
+				1,
+				start,
+				current,
+				target,
+				"player-1",
+				clicks,
+				solo,
+				null,
+				Instant.parse("2026-05-20T22:00:00Z"));
 	}
 
 	private static GameState roundOnePlayOnMovie() {
