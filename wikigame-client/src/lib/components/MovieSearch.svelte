@@ -1,4 +1,5 @@
 <script lang="ts">
+	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
 	import { searchFilms, type FilmSearchResult } from '$lib/api';
 
 	interface Props {
@@ -95,7 +96,7 @@
 	</label>
 
 	{#if searching}
-		<p class="status">Searching…</p>
+		<LoadingSpinner label="Searching Wikidata…" />
 	{:else if searchError}
 		<p class="error">{searchError}</p>
 	{/if}

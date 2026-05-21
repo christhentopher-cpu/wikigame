@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import type { Client } from '@stomp/stompjs';
 
+	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
 	import MovieSearch from '$lib/components/MovieSearch.svelte';
 	import * as api from '$lib/api';
 	import { getPlayerSession, setPlayerSession, type PlayerSession } from '$lib/session';
@@ -32,6 +33,8 @@
 	let moving = $state(false);
 	let error = $state<string | null>(null);
 	let stompClient: Client | null = null;
+	let inviteCopied = $state(false);
+	let roundWinBanner = $state<string | null>(null);
 
 	const isNavigator = $derived(
 		game && session ? game.activePlayerId === session.playerId : false
@@ -120,7 +123,16 @@
 		session = getPlayerSession(gameId);
 		await refreshGame();
 		stompClient = connectGame(gameId, (state) => {
+			const prev = game;
 			game = state;
+			if (prev && state && prev.currentNode.id !== state.currentNode.id) {
+				const reachedTarget = state.currentNode.id === state.targetMovie.id;
+				if (reachedTarget && state.phase === 'ROUND_TWO_SETUP') {
+					roundWinBanner = `Round 1 complete in ${state.clickCount} clicks!`;
+				} else if (reachedTarget && state.phase === 'FINISHED') {
+					roundWinBanner = `Round 2 complete in ${state.clickCount} clicks — match over!`;
+				}
+			}
 		});
 	});
 
@@ -231,6 +243,13 @@
 		error = null;
 		try {
 			game = await api.move(gameId, { playerId: session.playerId, nodeId: node.id });
+			if (game.currentNode.id === game.targetMovie.id) {
+				if (game.phase === 'ROUND_TWO_SETUP') {
+					roundWinBanner = `Round 1 complete in ${game.clickCount} clicks!`;
+				} else if (game.phase === 'FINISHED') {
+					roundWinBanner = `Round 2 complete in ${game.clickCount} clicks — match over!`;
+				}
+			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Move failed';
 		} finally {
@@ -283,11 +302,15 @@
 			return;
 		}
 		await navigator.clipboard.writeText(inviteUrl);
+		inviteCopied = true;
+		setTimeout(() => {
+			inviteCopied = false;
+		}, 2000);
 	}
 </script>
 
 {#if loading && !game}
-	<p class="status">Loading game…</p>
+	<LoadingSpinner label="Loading game…" />
 {:else if error && !game}
 	<p class="error">{error}</p>
 {:else if game}
@@ -325,7 +348,9 @@
 				<strong>{game.clickCount}</strong>
 			</div>
 			{#if game.phase === 'WAITING_FOR_OPPONENT'}
-				<button type="button" class="ghost" onclick={copyInvite}>Copy invite link</button>
+				<button type="button" class="ghost" onclick={copyInvite}>
+					{inviteCopied ? 'Copied!' : 'Copy invite link'}
+				</button>
 			{/if}
 			{#if game.phase !== 'FINISHED'}
 				<button type="button" class="ghost end-match" disabled={moving} onclick={handleEndMatch}>
@@ -340,6 +365,10 @@
 				<p class="hint">Both rounds are done or someone ended the game. Start fresh with a new link.</p>
 				<a href="/" class="primary-link">New game</a>
 			</section>
+		{/if}
+
+		{#if roundWinBanner}
+			<p class="banner win">{roundWinBanner}</p>
 		{/if}
 
 		{#if roleBanner}
@@ -420,7 +449,7 @@
 					{/if}
 
 					{#if neighborsLoading}
-						<p class="hint">Loading from Wikidata…</p>
+						<LoadingSpinner label="Loading links from Wikidata (may take a few seconds)…" />
 					{:else if neighborsError}
 						<p class="error">{neighborsError}</p>
 						<button
@@ -530,6 +559,12 @@
 		background: #1e2a3d;
 		color: #9aadc4;
 		border: 1px dashed #3a4f6b;
+	}
+
+	.banner.win {
+		background: #1a3d2a;
+		color: #9ee8b8;
+		border: 1px solid #2d6b4a;
 	}
 
 	.status {
