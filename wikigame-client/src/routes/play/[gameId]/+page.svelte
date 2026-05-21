@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { onDestroy, onMount } from 'svelte';
 	import { page } from '$app/state';
 	import type { Client } from '@stomp/stompjs';
@@ -6,7 +7,12 @@
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
 	import MovieSearch from '$lib/components/MovieSearch.svelte';
 	import * as api from '$lib/api';
-	import { getPlayerSession, setPlayerSession, type PlayerSession } from '$lib/session';
+	import {
+		clearPlayerSession,
+		getPlayerSession,
+		setPlayerSession,
+		type PlayerSession
+	} from '$lib/session';
 	import { connectGame } from '$lib/stomp';
 	import type { GameState, WikidataNode } from '$lib/types';
 
@@ -297,6 +303,11 @@
 		}
 	}
 
+	function leaveGame() {
+		clearPlayerSession(gameId);
+		void goto('/');
+	}
+
 	async function copyInvite() {
 		if (!inviteUrl) {
 			return;
@@ -357,6 +368,7 @@
 					End match
 				</button>
 			{/if}
+			<button type="button" class="ghost" onclick={leaveGame}>Leave game</button>
 		</section>
 
 		{#if game.phase === 'FINISHED'}
@@ -739,5 +751,35 @@
 		margin: 0.75rem 0 0;
 		color: #ff8f8f;
 		font-size: 0.9rem;
+	}
+
+	@media (max-width: 480px) {
+		.meta {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.route {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.arrow {
+			align-self: center;
+			transform: rotate(90deg);
+		}
+
+		.section-head {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.give-up {
+			width: 100%;
+		}
+
+		.links {
+			max-height: 50vh;
+		}
 	}
 </style>

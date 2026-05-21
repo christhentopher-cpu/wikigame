@@ -50,6 +50,22 @@
 		padding: 1.25rem 1rem 3rem;
 	}
 
+	@media (max-width: 480px) {
+		.app {
+			padding: 1rem 0.75rem 2.5rem;
+		}
+
+		.top {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.35rem;
+		}
+
+		.tagline {
+			font-size: 0.8rem;
+		}
+	}
+
 	.top {
 		display: flex;
 		align-items: baseline;

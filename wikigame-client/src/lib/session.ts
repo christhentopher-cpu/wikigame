@@ -28,3 +28,7 @@ export function getPlayerSession(gameId: string): PlayerSession | null {
 export function setPlayerSession(gameId: string, session: PlayerSession) {
 	sessionStorage.setItem(storageKey(gameId), JSON.stringify(session));
 }
+
+export function clearPlayerSession(gameId: string) {
+	sessionStorage.removeItem(storageKey(gameId));
+}
