@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import HowToPlay from '$lib/components/HowToPlay.svelte';
 	import MovieSearch from '$lib/components/MovieSearch.svelte';
 	import { createGame } from '$lib/api';
 	import { setPlayerSession } from '$lib/session';
@@ -39,6 +40,8 @@
 		}
 	}
 </script>
+
+<HowToPlay />
 
 <section class="card">
 	<h1>New game</h1>
