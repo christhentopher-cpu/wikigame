@@ -14,7 +14,7 @@ Two-player browser game: hop from **film → actor → film** on [Wikidata](http
 
 ## Quick start (Docker — recommended)
 
-**Prerequisites:** Docker installed and running ([Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Colima](https://github.com/abiosoft/colima): `brew install colima docker && colima start`).
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running (whale icon in the menu bar).
 
 ```bash
 git clone https://github.com/christhentopher-cpu/wikigame.git
